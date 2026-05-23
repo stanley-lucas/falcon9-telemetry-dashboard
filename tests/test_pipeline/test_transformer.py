@@ -1,5 +1,3 @@
-import pytest
-
 from src.pipeline.transformer import normalize_cores, normalize_launches, normalize_launchpads
 from src.config import settings
 

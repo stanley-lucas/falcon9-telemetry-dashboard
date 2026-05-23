@@ -33,7 +33,7 @@ def main() -> None:
     # --- KPI row ---
     col1, col2, col3, col4 = st.columns(4)
     total = len(launches)
-    successes = sum(1 for l in launches if l["success"] is True)
+    successes = sum(1 for launch in launches if launch["success"] is True)
     col1.metric("Total Launches", total)
     col2.metric("Mission Success Rate", f"{successes / total * 100:.1f}%" if total else "—")
     col3.metric("Landing Attempts", stats["total_attempts"])

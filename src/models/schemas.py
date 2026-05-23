@@ -72,7 +72,7 @@ class LandingStats(BaseModel):
     asds_attempts: int
     asds_successes: int
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def success_rate_pct(self) -> float:
         if self.total_attempts == 0:

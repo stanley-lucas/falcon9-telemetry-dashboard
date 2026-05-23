@@ -1,7 +1,6 @@
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from src.config import settings
 from src.models.db import Base
@@ -26,7 +25,7 @@ async def engine():
 
 @pytest_asyncio.fixture
 async def db_session(engine):
-    Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    Session = async_sessionmaker(engine, expire_on_commit=False)
     async with Session() as session:
         yield session
         await session.rollback()
@@ -34,7 +33,7 @@ async def db_session(engine):
 
 @pytest_asyncio.fixture
 async def api_client(engine):
-    Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    Session = async_sessionmaker(engine, expire_on_commit=False)
     app.state.engine = engine
     app.state.session_factory = Session
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

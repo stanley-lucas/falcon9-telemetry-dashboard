@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.api.routers import health, launches
 from src.models.db import Base
@@ -17,9 +16,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     app.state.engine = engine
-    app.state.session_factory = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    app.state.session_factory = async_sessionmaker(engine, expire_on_commit=False)
     yield
     await engine.dispose()
 

@@ -1,8 +1,7 @@
 import asyncio
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from src.config import settings
 from src.models.db import Base
@@ -19,7 +18,7 @@ async def run_pipeline() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    Session = async_sessionmaker(engine, expire_on_commit=False)
     client = SpaceXClient()
 
     log.info("Fetching data from SpaceX API (3 endpoints in parallel)...")

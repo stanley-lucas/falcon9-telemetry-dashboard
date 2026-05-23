@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-falcon9}
+      POSTGRES_USER: ${POSTGRES_USER:-falcon9}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-falcon9}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-falcon9}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-falcon9}:${POSTGRES_PASSWORD:-falcon9}@db:5432/${POSTGRES_DB:-falcon9}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    environment:
+      API_BASE_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-falcon9}:${POSTGRES_PASSWORD:-falcon9}@db:5432/${POSTGRES_DB:-falcon9}
+      SPACEX_API_BASE_URL: ${SPACEX_API_BASE_URL:-https://api.spacexdata.com/v4}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m src.pipeline.run
+    profiles:
+      - pipeline
+
+volumes:
+  postgres_data:

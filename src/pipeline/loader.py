@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
@@ -8,7 +10,7 @@ from src.models.db import Core, Launch, LaunchCore, Launchpad
 
 async def upsert_launchpads(session: AsyncSession, df: pd.DataFrame) -> None:
     for _, row in df.iterrows():
-        data = row.to_dict()
+        data: dict[str, Any] = {str(k): v for k, v in row.to_dict().items()}
         stmt = insert(Launchpad).values(data)
         stmt = stmt.on_conflict_do_update(
             index_elements=["id"],
@@ -19,7 +21,7 @@ async def upsert_launchpads(session: AsyncSession, df: pd.DataFrame) -> None:
 
 async def upsert_cores(session: AsyncSession, df: pd.DataFrame) -> None:
     for _, row in df.iterrows():
-        data = row.to_dict()
+        data: dict[str, Any] = {str(k): v for k, v in row.to_dict().items()}
         stmt = insert(Core).values(data)
         stmt = stmt.on_conflict_do_update(
             index_elements=["serial"],
@@ -30,8 +32,8 @@ async def upsert_cores(session: AsyncSession, df: pd.DataFrame) -> None:
 
 async def upsert_launches(session: AsyncSession, df: pd.DataFrame) -> None:
     for _, row in df.iterrows():
-        cores_data: list[dict] = row.get("cores", []) or []
-        launch_data = row.drop("cores").to_dict()
+        cores_data: list[dict[str, Any]] = row.get("cores", []) or []
+        launch_data: dict[str, Any] = {str(k): v for k, v in row.drop("cores").to_dict().items()}
 
         stmt = insert(Launch).values(launch_data)
         stmt = stmt.on_conflict_do_update(

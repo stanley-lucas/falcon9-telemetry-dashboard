@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 
 from src.config import settings
@@ -7,7 +9,7 @@ LAUNCHPAD_COLUMNS = ["id", "name", "full_name", "locality", "region", "latitude"
 CORE_COLUMNS = ["serial", "reuse_count", "rtls_attempts", "rtls_landings", "asds_attempts", "asds_landings"]
 
 
-def normalize_launches(raw: list[dict]) -> pd.DataFrame:
+def normalize_launches(raw: list[dict[str, Any]]) -> pd.DataFrame:
     """Filter to Falcon 9 only and normalize column names."""
     df = pd.json_normalize(raw)
     df = df[df["rocket"] == settings.FALCON9_ROCKET_ID].copy()
@@ -16,11 +18,11 @@ def normalize_launches(raw: list[dict]) -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
-def normalize_launchpads(raw: list[dict]) -> pd.DataFrame:
+def normalize_launchpads(raw: list[dict[str, Any]]) -> pd.DataFrame:
     df = pd.json_normalize(raw)
     return df[LAUNCHPAD_COLUMNS].reset_index(drop=True)
 
 
-def normalize_cores(raw: list[dict]) -> pd.DataFrame:
+def normalize_cores(raw: list[dict[str, Any]]) -> pd.DataFrame:
     df = pd.json_normalize(raw)
     return df[CORE_COLUMNS].dropna(subset=["serial"]).reset_index(drop=True)

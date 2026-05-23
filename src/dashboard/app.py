@@ -1,6 +1,8 @@
 import os
+from typing import Any, cast
 
 import httpx
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -8,17 +10,17 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 
 @st.cache_data(ttl=300)
-def fetch_launches(limit: int = 200) -> list[dict]:
+def fetch_launches(limit: int = 200) -> list[dict[str, Any]]:
     response = httpx.get(f"{API_BASE_URL}/launches", params={"limit": limit})
     response.raise_for_status()
-    return response.json()
+    return cast(list[dict[str, Any]], response.json())
 
 
 @st.cache_data(ttl=300)
-def fetch_landing_stats() -> dict:
+def fetch_landing_stats() -> dict[str, Any]:
     response = httpx.get(f"{API_BASE_URL}/launches/stats/landing")
     response.raise_for_status()
-    return response.json()
+    return cast(dict[str, Any], response.json())
 
 
 def main() -> None:
@@ -43,7 +45,6 @@ def main() -> None:
 
     # --- Launch timeline ---
     st.subheader("Launch Timeline")
-    import pandas as pd
     df = pd.DataFrame(launches)
     df["date_utc"] = pd.to_datetime(df["date_utc"])
     df["outcome"] = df["success"].map({True: "Success", False: "Failure", None: "Unknown"})

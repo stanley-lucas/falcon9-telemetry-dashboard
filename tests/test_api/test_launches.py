@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy import insert
+from sqlalchemy.dialects.postgresql import insert
 
 from src.models.db import Launch, Launchpad
 import datetime
